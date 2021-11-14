@@ -1,9 +1,12 @@
 from utils import file_utils
 from pipelines.generic_pipline import clean_data_and_transform
+from utils.aggregator import Aggregator
 import pandas as pd
+import numpy as np
 import umap
 import matplotlib.pyplot as plt
 
+agg = Aggregator()
 dataset_name = 'CMC'
 dataset_filename = 'cmc.arff'
 
@@ -20,9 +23,8 @@ data_y = pd.DataFrame(raw_data[class_column_name].apply(lambda bts: int(bts)))
 clean_data = clean_data_and_transform(raw_data, numeric_columns, columns_ordinal, columns_one_hot)
 
 # 3. UMAP
-fit = umap.UMAP()
-u = fit.fit_transform(clean_data)
+u = agg.fit_UMAP(clean_data, data_y, dataset_name=dataset_name)
 
-plt.scatter(u[:,0], u[:,1], c=data_y.to_numpy())
-plt.title(f'UMAP embedding of {dataset_name} dataset');
+plt.scatter(clean_data[:, 0], clean_data[:, 1], c=data_y.to_numpy())
+plt.title(f'2 dimensions of {dataset_name} dataset');
 plt.show()

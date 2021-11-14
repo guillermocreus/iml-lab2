@@ -1,10 +1,12 @@
 from utils import file_utils
 from pipelines.generic_pipline import clean_data_and_transform
+from utils.aggregator import Aggregator
 from sklearn.preprocessing import OrdinalEncoder
 import pandas as pd
 import umap
 import matplotlib.pyplot as plt
 
+agg = Aggregator()
 dataset_name = 'Hypothyroid'
 dataset_filename = 'hypothyroid.arff'
 
@@ -21,12 +23,7 @@ data_y = raw_data[class_column_name]
 # 2. clean data
 clean_data = clean_data_and_transform(raw_data, numeric_columns, columns_ordinal, columns_one_hot)
 data_y = pd.DataFrame(data_y.apply(lambda string: string.decode("utf-8", "ignore")))
-data_y = OrdinalEncoder(categories='auto').fit_transform(data_y)
+data_y = pd.DataFrame(OrdinalEncoder(categories='auto').fit_transform(data_y))
 
 # 3. UMAP
-fit = umap.UMAP()
-u = fit.fit_transform(clean_data)
-
-plt.scatter(u[:,0], u[:,1], c=data_y)
-plt.title(f'UMAP embedding of {dataset_name} dataset');
-plt.show()
+u = agg.fit_UMAP(clean_data, data_y, dataset_name=dataset_name)
