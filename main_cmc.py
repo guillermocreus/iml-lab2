@@ -22,9 +22,8 @@ data_y = pd.DataFrame(raw_data[class_column_name].apply(lambda bts: int(bts)))
 # 2. clean data
 clean_data = clean_data_and_transform(raw_data, numeric_columns, columns_ordinal, columns_one_hot)
 
-# 3. UMAP
-u = agg.fit_UMAP(clean_data, data_y, dataset_name=dataset_name)
+# 3. evaluate methods
+agg.evaluate(clean_data, 2, data_y[class_column_name], dataset_name=dataset_name)
 
-plt.scatter(clean_data[:, 0], clean_data[:, 1], c=data_y.to_numpy())
-plt.title(f'2 dimensions of {dataset_name} dataset');
-plt.show()
+# 4. plot metrics
+agg.plot_metrics_with_error()

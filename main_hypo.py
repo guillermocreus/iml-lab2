@@ -3,6 +3,7 @@ from pipelines.generic_pipline import clean_data_and_transform
 from utils.aggregator import Aggregator
 from sklearn.preprocessing import OrdinalEncoder
 import pandas as pd
+import numpy as np
 import umap
 import matplotlib.pyplot as plt
 
@@ -23,7 +24,13 @@ data_y = raw_data[class_column_name]
 # 2. clean data
 clean_data = clean_data_and_transform(raw_data, numeric_columns, columns_ordinal, columns_one_hot)
 data_y = pd.DataFrame(data_y.apply(lambda string: string.decode("utf-8", "ignore")))
-data_y = pd.DataFrame(OrdinalEncoder(categories='auto').fit_transform(data_y))
 
-# 3. UMAP
-u = agg.fit_UMAP(clean_data, data_y, dataset_name=dataset_name)
+tmp_data_y = OrdinalEncoder(categories='auto').fit_transform(data_y)
+tmp_data_y = np.array([int(v[0]) for v in tmp_data_y])
+data_y = pd.DataFrame({class_column_name: tmp_data_y})
+
+# 3. evaluate methods
+agg.evaluate(clean_data, 2, data_y[class_column_name], dataset_name=dataset_name)
+
+# 4. plot metrics
+agg.plot_metrics_with_error()
