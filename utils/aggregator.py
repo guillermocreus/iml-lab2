@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import umap
+
 import matplotlib.pyplot as plt
 # from sklearn.metrics import silhouette_score
 # from sklearn.metrics import calinski_harabasz_score
@@ -15,6 +16,10 @@ import matplotlib.pyplot as plt
 # from datetime import datetime
 #
 # colors = list(colors._colors_full_map.values())
+from pandas import Series, DataFrame
+
+from pca import PCA
+from utils.ploting_utils import plot_scatter
 
 
 class Aggregator:
@@ -29,31 +34,37 @@ class Aggregator:
 		self._final_metrics = {'PCA': {}, 'umap': {}}
 		self._confusion_matrix = dict()
 
+	def fit_UMAP(self, data, y: Series, dataset_name='', plot=True):
+		"""
 
-	def fit_UMAP(self, data, y, dataset_name='', plot=True):
+		Parameters
+		----------
+		data
+		y -> pass it as Series # y['class']
+		dataset_name
+		plot
+
+		Returns
+		-------
+
+		"""
 		fit = umap.UMAP()
 		u = fit.fit_transform(data)
 
 		if plot:
-			plt.scatter(u[:, 0], u[:, 1], c=y.to_numpy())
-			plt.title(f'UMAP embedding of {dataset_name} dataset');
-			plt.show()
+			plot_scatter(u, y, f'UMAP embedding of {dataset_name} dataset')
 
 		self._transformed_data['umap'] = u
 
+	def fit_PCA(self, data, desired_components, y, dataset_name='', plot=True):
 
-	def fit_PCA(self, data, y, dataset_name='', plot=True):
-		u = data[:, :2]
-
+		pca = PCA()
+		results = pca.fit_transform(data, desired_components)
 		if plot:
-			plt.scatter(u[:, 0], u[:, 1], c=y.to_numpy())
-			plt.title(f'UMAP embedding of {dataset_name} dataset');
-			plt.show()
+			plot_scatter(results['reduced'], y, f'reduce data {dataset_name}')
 
-		self._transformed_data['PCA'] = u
-
+		return results['reduced']
 
 	def evaluate(self, data, y, dataset_name=''):
-		km = KMeans()
-
+		# km = KMeans()
 		return 0
