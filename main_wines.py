@@ -16,7 +16,7 @@ data_y = pd.DataFrame(raw_data['class'].apply(lambda bts: int(bts)))
 # 2. clean data
 clean_data = clean_numerical_data(raw_data, ['a' + str(num) for num in range(1, 14)])
 
-# 3. UMAP
-u = agg.fit_UMAP(clean_data, data_y['class'], dataset_name=dataset_name)
+# 3. evaluate methods
+agg.evaluate(clean_data, 2, data_y['class'], dataset_name=dataset_name)
 
-_ = agg.fit_PCA(clean_data, 2, data_y['class'], dataset_name=dataset_name)
+agg.plot_metrics_with_error()

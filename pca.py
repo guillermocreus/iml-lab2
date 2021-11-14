@@ -1,7 +1,6 @@
 import numpy as np
 
 
-
 def _print_eigen_value_and_vectors(values, vectors):
 	for val, vct in zip(values, vectors):
 		print(f'[{val}] -> {vct}')
@@ -27,7 +26,7 @@ class PCA:
 		# 		Use numpy library. Write them in console.
 		eigen_values, eigen_vectors = np.linalg.eigh(df_covariance_matrix)
 
-		_print_eigen_value_and_vectors(values=eigen_values, vectors=eigen_vectors)
+		# _print_eigen_value_and_vectors(values=eigen_values, vectors=eigen_vectors)
 
 		# 1.6. 	Sort the eigenvectors by decreasing eigenvalues and
 		# 		choose k eigenvectors with the largest eigenvalues to form a new d x k dimensional matrix (where every column represents an eigenvector).
@@ -35,8 +34,8 @@ class PCA:
 		sorted_index = np.argsort(eigen_values)[::-1]
 		sorted_eigenvalue = eigen_values[sorted_index]
 		sorted_eigenvectors = eigen_vectors[:, sorted_index]
-		print("\n\n Sorted::\n")
-		_print_eigen_value_and_vectors(values=sorted_eigenvalue, vectors=sorted_eigenvectors)
+		# print("\n\n Sorted::\n")
+		# _print_eigen_value_and_vectors(values=sorted_eigenvalue, vectors=sorted_eigenvectors)
 
 		# 1.7. 	Derive the new data set. Use this d x k eigenvector matrix to transform the samples onto the new subspace.
 		eigenvector_subspace = sorted_eigenvectors[:, 0:desired_components]
