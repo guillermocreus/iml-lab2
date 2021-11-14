@@ -19,25 +19,36 @@ wines_clean_data = clean_numerical_data(wines_raw_data, ['a' + str(num) for num 
 #
 # 1.2. Plot the original data set (choose two or three of its features to visualize it).
 #
-pca_result = pca.pca(wines_clean_data, 2)
+pca_result, rev_pca_result = pca.pca(wines_clean_data, 2)
+
+pca_result2, _ = pca.pca(rev_pca_result, 2)
 
 pca = PCA(n_components=2)
 cc = pca.fit_transform(wines_clean_data)
-
-for my_pca, sk_pca in zip(pca_result, cc):
-	print(f'my ::{my_pca}, sk ::{sk_pca}')
 
 k1, k11 = pca_result[wines_y['class'] == 1], cc[wines_y['class'] == 1]
 k2, k22 = pca_result[wines_y['class'] == 2], cc[wines_y['class'] == 2]
 k3, k33 = pca_result[wines_y['class'] == 3], cc[wines_y['class'] == 3]
 
-plt.title('my')
+plt.title('PCA')
 plt.scatter(k1[:, 0], k1[:, 1], color='red')
 plt.scatter(k2[:, 0], k2[:, 1], color='green')
 plt.scatter(k3[:, 0], k3[:, 1], color='blue')
 plt.show()
-plt.title('sklearn')
+
+plt.title('sklearn PCA')
 plt.scatter(k11[:, 0], k11[:, 1], color='red')
 plt.scatter(k22[:, 0], k22[:, 1], color='green')
 plt.scatter(k33[:, 0], k33[:, 1], color='blue')
 plt.show()
+
+k111 = pca_result2[wines_y['class'] == 1]
+k222 = pca_result2[wines_y['class'] == 2]
+k333 = pca_result2[wines_y['class'] == 3]
+
+plt.title('Rev PCA')
+plt.scatter(k111[:, 0], k111[:, 1], color='red')
+plt.scatter(k222[:, 0], k222[:, 1], color='green')
+plt.scatter(k333[:, 0], k333[:, 1], color='blue')
+plt.show()
+

@@ -10,7 +10,7 @@ def pca(df, desired_components):
 	"""
 	# 1.3. 	Compute the d-dimensional mean vector (i.e., the means of every dimension of the whole data set)
 	df_mean = df - np.mean(df, axis=0)
-	# df_mean = df
+
 	# 1.4. 	Compute the covariance matrix of the whole data set. Show this information.
 	df_covariance_matrix = np.cov(df_mean, rowvar=False)
 
@@ -33,11 +33,12 @@ def pca(df, desired_components):
 	eigenvector_subspace = sorted_eigenvectors[:, 0:desired_components]
 	df_reduced = np.dot(eigenvector_subspace.transpose(), df_mean.transpose()).transpose()
 
-	# 1.9
-	# reversed = np.dot(df_reduced , eigenvector_subspace.transpose()) + df_mean
-	temp = np.dot(eigenvector_subspace.transpose(), np.mean(df, axis=0)).transpose()
-	print(f'temp {temp}')
-	return df_reduced + temp
+	# 1.8.
+	reversed = np.dot(eigenvector_subspace, df_reduced.transpose()).transpose() + df_mean
+	print(reversed.shape)
+	print('hhh')
+
+	return df_reduced, reversed
 
 
 def _print_eigen_value_and_vectors(values, vectors):
