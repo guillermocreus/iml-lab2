@@ -2,8 +2,8 @@ from utils import file_utils
 from pipelines.generic_pipline import clean_numerical_data
 from utils.aggregator import Aggregator
 import pandas as pd
-import umap
-import matplotlib.pyplot as plt
+
+from utils.ploting_utils import plot_scatter
 
 agg = Aggregator()
 class_column_name = 'class'
@@ -11,9 +11,9 @@ dataset_name = 'Wines'
 dataset_filename = 'wine.arff'
 
 umap_parameters = {
-    'n_neighbors': 20,  # def = 15, higher --> global
-    'min_dist': 0.25,  # def = 0.1, higher --> global
-    'metric': 'euclidean'
+	'n_neighbors': 20,  # def = 15, higher --> global
+	'min_dist': 0.25,  # def = 0.1, higher --> global
+	'metric': 'euclidean'
 }
 
 # 1. load file
@@ -22,6 +22,9 @@ data_y = pd.DataFrame(raw_data['class'].apply(lambda bts: int(bts)))
 
 # 2. clean data
 clean_data = clean_numerical_data(raw_data, ['a' + str(num) for num in range(1, 14)])
+
+# 2.1 plot raw data
+plot_scatter(clean_numerical_data(raw_data, ['a1', 'a2']), data_y['class'], 'scatter of wines based on [a1,a2]')
 
 # 3. evaluate methods
 agg.evaluate(clean_data, 2, data_y[class_column_name], umap_parameters, dataset_name=dataset_name)

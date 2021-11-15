@@ -1,11 +1,12 @@
+from pipelines.generic_pipeline import clean_numerical_data
 from utils import file_utils
 from pipelines.generic_pipline import clean_data_and_transform
 from utils.aggregator import Aggregator
 from sklearn.preprocessing import OrdinalEncoder
 import pandas as pd
 import numpy as np
-import umap
-import matplotlib.pyplot as plt
+
+from utils.ploting_utils import plot_scatter
 
 agg = Aggregator()
 dataset_name = 'Hypothyroid'
@@ -13,13 +14,14 @@ dataset_filename = 'hypothyroid.arff'
 
 class_column_name = 'Class'
 numeric_columns = ['age', 'TSH', 'T3', 'TT4', 'T4U', 'FTI']
-columns_ordinal = ['sex', 'on_thyroxine', 'query_on_thyroxine', 'on_antithyroid_medication', 'sick', 'pregnant', 'thyroid_surgery', 'I131_treatment', 'query_hypothyroid', 'query_hyperthyroid', 'lithium', 'goitre', 'tumor', 'hypopituitary', 'psych']
+columns_ordinal = ['sex', 'on_thyroxine', 'query_on_thyroxine', 'on_antithyroid_medication', 'sick', 'pregnant', 'thyroid_surgery', 'I131_treatment', 'query_hypothyroid', 'query_hyperthyroid',
+				   'lithium', 'goitre', 'tumor', 'hypopituitary', 'psych']
 columns_one_hot = ['referral_source']
 
 umap_parameters = {
-    'n_neighbors': 20,  # def = 15, higher --> global
-    'min_dist': 0.25,  # def = 0.1, higher --> global
-    'metric': 'euclidean'
+	'n_neighbors': 20,  # def = 15, higher --> global
+	'min_dist': 0.25,  # def = 0.1, higher --> global
+	'metric': 'euclidean'
 }
 
 # 1. load file
@@ -29,6 +31,9 @@ data_y = raw_data[class_column_name]
 # 2. clean data
 clean_data = clean_data_and_transform(raw_data, numeric_columns, columns_ordinal, columns_one_hot)
 data_y = pd.DataFrame(data_y.apply(lambda string: string.decode("utf-8", "ignore")))
+
+# 2.1 scatter clean data
+plot_scatter(clean_numerical_data(raw_data, ['age', 'T3']), data_y['class'], f' scatter of [{dataset_name}] based on [age,T3]')
 
 tmp_data_y = OrdinalEncoder(categories='auto').fit_transform(data_y)
 tmp_data_y = np.array([int(v[0]) for v in tmp_data_y])
