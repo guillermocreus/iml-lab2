@@ -16,6 +16,11 @@ numeric_columns = ['age', 'TSH', 'T3', 'TT4', 'T4U', 'FTI']
 columns_ordinal = ['sex', 'on_thyroxine', 'query_on_thyroxine', 'on_antithyroid_medication', 'sick', 'pregnant', 'thyroid_surgery', 'I131_treatment', 'query_hypothyroid', 'query_hyperthyroid', 'lithium', 'goitre', 'tumor', 'hypopituitary', 'psych']
 columns_one_hot = ['referral_source']
 
+umap_parameters = {
+    'n_neighbors': 20,  # def = 15, higher --> global
+    'min_dist': 0.25,  # def = 0.1, higher --> global
+    'metric': 'euclidean'
+}
 
 # 1. load file
 raw_data = file_utils.load_arff(f'datasets/{dataset_filename}')
@@ -30,7 +35,7 @@ tmp_data_y = np.array([int(v[0]) for v in tmp_data_y])
 data_y = pd.DataFrame({class_column_name: tmp_data_y})
 
 # 3. evaluate methods
-agg.evaluate(clean_data, 2, data_y[class_column_name], dataset_name=dataset_name)
+agg.evaluate(clean_data, 2, data_y[class_column_name], umap_parameters, dataset_name=dataset_name)
 
 # 4. plot metrics
 agg.plot_metrics_with_error()
