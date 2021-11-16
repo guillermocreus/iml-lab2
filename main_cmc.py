@@ -3,7 +3,7 @@ from utils import file_utils
 from pipelines.generic_pipline import clean_data_and_transform
 from utils.aggregator import Aggregator
 import pandas as pd
-
+from utils.dataset_info import dataset_info
 from utils.ploting_utils import plot_scatter
 
 agg = Aggregator()
@@ -26,14 +26,22 @@ umap_parameters = {
 raw_data = file_utils.load_arff(f'datasets/{dataset_filename}')
 data_y = pd.DataFrame(raw_data[class_column_name].apply(lambda bts: int(bts)))
 
+
 # 2. clean data
 clean_data = clean_data_and_transform(raw_data, numeric_columns, columns_ordinal, columns_one_hot)
+clean_data_ = pd.DataFrame(clean_data)
+clean_data_.columns = numeric_columns + ['c' + str(num) for num in range(len(numeric_columns), clean_data.shape[1])]
 
-# 2.1. scatter raw data
-plot_scatter(clean_numerical_data(raw_data, ['wage', 'children']), data_y['class'], f'scatter of {dataset_name} based on [wage,children]')
+# 2.1 information of the dataset
+dataset_info(clean_data, data_y[class_column_name], dataset_name=dataset_name)
 
-# 3. evaluate methods
-agg.evaluate(clean_data, 2, data_y[class_column_name], umap_parameters, dataset_name=dataset_name)
-
-# 4. plot metrics
-agg.plot_metrics_with_error()
+# # 3. plot complete dataset
+# features_to_plot = ['wage', 'children']
+# plot_scatter(clean_data_[features_to_plot].to_numpy(), data_y[class_column_name],
+#              f'Scatter plot of dataset {dataset_name} based on {features_to_plot}')
+#
+# # 4. evaluate methods
+# agg.evaluate(clean_data, 2, data_y[class_column_name], umap_parameters, dataset_name=dataset_name)
+#
+# # 5. plot metrics
+# agg.plot_metrics_with_error()
