@@ -28,13 +28,13 @@ clean_data_.columns = ['a' + str(num) for num in range(1, 14)]
 # 2.1 information of the dataset
 dataset_info(clean_data, data_y[class_column_name], dataset_name=dataset_name)
 
-# # 3. plot complete dataset
-# features_to_plot = ['a1', 'a2']
-# plot_scatter(clean_data_[features_to_plot].to_numpy(), data_y[class_column_name],
-#              f'Scatter plot of dataset{dataset_name} based on {features_to_plot}')
-#
-# # 4. evaluate methods
-# agg.evaluate(clean_data, 2, data_y[class_column_name], umap_parameters, dataset_name=dataset_name)
-#
-# # 5. plot metrics
-# agg.plot_metrics_with_error()
+# 3. plot complete dataset
+features_to_plot = ['a1', 'a2']
+plot_scatter(clean_data_[features_to_plot].to_numpy(), data_y[class_column_name],
+             f'Scatter plot of dataset{dataset_name} based on {features_to_plot}')
+
+# 4. evaluate methods
+agg.evaluate(clean_data, 2, data_y[class_column_name], umap_parameters, dataset_name=dataset_name)
+
+# 5. plot metrics
+agg.plot_metrics_with_error()

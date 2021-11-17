@@ -65,7 +65,7 @@ class Aggregator:
 		pca = IncrementalPCA(n_components=desired_components, batch_size=10)
 		results = pca.fit_transform(data)
 		if plot:
-			plot_scatter(results, y, f'Sklearn Incremental PCA reduced of dataset {dataset_name}')
+			plot_scatter(results, y, f'Sklearn Incremental PCA reduced data of dataset {dataset_name}')
 		return results
 
 	def evaluate(self, data, desired_components, y, umap_parameters, dataset_name=''):
@@ -76,14 +76,16 @@ class Aggregator:
 		results_pca = self.fit_PCA(data, desired_components, y, dataset_name=dataset_name)
 		self._transformed_data['pca'] = results_pca['reduced']
 
-		results_pca_sklearn = self.fit_PCA_sklearn(data, desired_components, y, dataset_name=dataset_name)
+		results_pca_sklearn = self.fit_PCA_sklearn(data, desired_components,
+												   y, dataset_name=dataset_name)
 		self._transformed_data['pca_sklearn'] = results_pca_sklearn
 
-		results_incremental_pca_sklearn = self.fit_PCA_sklearn(data, desired_components, y, dataset_name=dataset_name)
+		results_incremental_pca_sklearn = self.fit_incremental_PCA(data, desired_components,
+																   y, dataset_name=dataset_name)
 		self._transformed_data['incremental_pca'] = results_incremental_pca_sklearn
 
 		km = KMeans()
-		for n_cluster in range(2, 3):
+		for n_cluster in range(2, 10):
 			# complete data
 			_ = km.train(data, n_cluster, distance_dict['l2'])
 			labels_complete = km.predict(data, distance_dict['l2'])
@@ -162,36 +164,36 @@ class Aggregator:
 		return 0
 
 
-def plot_metrics_with_error(self):
-	"""
-		plot error metrics
-	"""
-	_colors = {
-		'silhouette_score': 'b',
-		'calinski_harabasz_score': 'g',
-		'davies_bouldin_score': 'y'
-	}
-
-	fig, axs = plt.subplots(nrows=3, ncols=len(self._metrics.keys()), figsize=(30, 15))
-
-	for ax, col in zip(axs[0, :], self._metrics.keys()):
-		ax.set_title(col, size=14)
-
-	for ax, row in zip(axs[:, 0], ['Silhouette', 'Calinski', 'Davies Bouldin']):
-		ax.set_ylabel(row, size=14)
-
-	for i, (method, cluster_dict) in enumerate(self._metrics.items()):
-
-		scores_method = {
-			'silhouette_score': [],
-			'calinski_harabasz_score': [],
-			'davies_bouldin_score': []
+	def plot_metrics_with_error(self):
+		"""
+			plot error metrics
+		"""
+		_colors = {
+			'silhouette_score': 'b',
+			'calinski_harabasz_score': 'g',
+			'davies_bouldin_score': 'y'
 		}
 
-		for (n_cluster, scores_dict) in cluster_dict.items():
-			for key, value in scores_dict.items():
-				scores_method[key].append(value)
+		fig, axs = plt.subplots(nrows=3, ncols=len(self._metrics.keys()), figsize=(30, 15))
 
-		for j, (score, results) in enumerate(scores_method.items()):
-			axs[j][i].plot(np.arange(2, 10), results, marker='o', color=_colors[score])
-	plt.show()
+		for ax, col in zip(axs[0, :], self._metrics.keys()):
+			ax.set_title(col, size=14)
+
+		for ax, row in zip(axs[:, 0], ['Silhouette', 'Calinski', 'Davies Bouldin']):
+			ax.set_ylabel(row, size=14)
+
+		for i, (method, cluster_dict) in enumerate(self._metrics.items()):
+
+			scores_method = {
+				'silhouette_score': [],
+				'calinski_harabasz_score': [],
+				'davies_bouldin_score': []
+			}
+
+			for (n_cluster, scores_dict) in cluster_dict.items():
+				for key, value in scores_dict.items():
+					scores_method[key].append(value)
+
+			for j, (score, results) in enumerate(scores_method.items()):
+				axs[j][i].plot(np.arange(2, 10), results, marker='o', color=_colors[score])
+		plt.show()
