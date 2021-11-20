@@ -18,7 +18,7 @@ columns_one_hot = ['hoccupation']
 # umap parameters
 umap_parameters = {
 	'n_neighbors': 50,  # def = 15, higher --> global
-	'min_dist': 0.9,  # def = 0.1, higher --> global
+	'min_dist': 0.01,  # def = 0.1, higher --> global
 	'metric': 'euclidean'
 }
 
@@ -36,12 +36,12 @@ clean_data_.columns = numeric_columns + ['c' + str(num) for num in range(len(num
 dataset_info(clean_data, data_y[class_column_name], dataset_name=dataset_name)
 
 # # 3. plot complete dataset
-# features_to_plot = ['wage', 'children']
-# plot_scatter(clean_data_[features_to_plot].to_numpy(), data_y[class_column_name],
-#              f'Scatter plot of dataset {dataset_name} based on {features_to_plot}')
+features_to_plot = ['wage', 'children']
+plot_scatter(clean_data_[features_to_plot].to_numpy(), data_y[class_column_name],
+              f'Scatter plot of dataset {dataset_name} based on {features_to_plot}')
 #
 # # 4. evaluate methods
-# agg.evaluate(clean_data, 2, data_y[class_column_name], umap_parameters, dataset_name=dataset_name)
+agg.evaluate(clean_data, 2, data_y[class_column_name], umap_parameters, dataset_name=dataset_name)
 #
 # # 5. plot metrics
-# agg.plot_metrics_with_error()
+agg.plot_metrics_with_error()

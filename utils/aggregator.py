@@ -8,6 +8,7 @@ from sklearn.decomposition import PCA as PCA_sklearn
 from sklearn.decomposition import IncrementalPCA
 from classifiers.k_means import KMeans
 from utils.distance_utils import distance_dict
+import time
 # import matplotlib.colors as colors
 # from datetime import datetime
 #
@@ -85,10 +86,22 @@ class Aggregator:
 		self._transformed_data['incremental_pca'] = results_incremental_pca_sklearn
 
 		km = KMeans()
+		completeDatatime={"total":[],"predict":[],"train":[]}
+		PCADatatime={"total":[],"predict":[],"train":[]}
+		SkPCADatatime = {"total": [], "predict": [], "train": []}
+		UMAPDatatime={"total":[],"predict":[],"train":[]}
+		IncPCADatatime={"total":[],"predict":[],"train":[]}
 		for n_cluster in range(2, 10):
 			# complete data
+			start = time.perf_counter()
 			_ = km.train(data, n_cluster, distance_dict['l2'])
+			mid = time.perf_counter()
 			labels_complete = km.predict(data, distance_dict['l2'])
+			end = time.perf_counter()
+			completeDatatime["train"].append(mid - start)
+			completeDatatime["predict"].append(end - mid)
+			completeDatatime["total"].append(end - start)
+
 			self._results['complete'][n_cluster] = labels_complete
 
 			sh_score_complete = silhouette_score(data, labels_complete)
@@ -102,8 +115,15 @@ class Aggregator:
 			}
 
 			# homemade PCA reduced data
+			start = time.perf_counter()
 			_ = km.train(self._transformed_data['pca'], n_cluster, distance_dict['l2'])
+			mid = time.perf_counter()
 			labels_pca = km.predict(self._transformed_data['pca'], distance_dict['l2'])
+			end = time.perf_counter()
+			PCADatatime["train"].append(mid - start)
+			PCADatatime["predict"].append(end - mid)
+			PCADatatime["total"].append(end - start)
+
 			self._results['pca'][n_cluster] = labels_pca
 
 			sh_score_pca = silhouette_score(self._transformed_data['pca'], labels_pca)
@@ -117,9 +137,18 @@ class Aggregator:
 			}
 
 			# sklearn PCA reduced data
+			start = time.perf_counter()
 			_ = km.train(self._transformed_data['pca_sklearn'], n_cluster, distance_dict['l2'])
+			mid = time.perf_counter()
 			labels_pca_sklearn = km.predict(self._transformed_data['pca_sklearn'], distance_dict['l2'])
+			end = time.perf_counter()
+			SkPCADatatime["train"].append(mid - start)
+			SkPCADatatime["predict"].append(end - mid)
+			SkPCADatatime["total"].append(end - start)
+
 			self._results['pca_sklearn'][n_cluster] = labels_pca_sklearn
+
+
 
 			sh_score_pca_sklearn = silhouette_score(self._transformed_data['pca_sklearn'], labels_pca_sklearn)
 			calinski_harabasz_score_pca_sklearn = calinski_harabasz_score(self._transformed_data['pca_sklearn'], labels_pca_sklearn)
@@ -132,9 +161,18 @@ class Aggregator:
 			}
 
 			# umap reduced data
+			start = time.perf_counter()
 			_ = km.train(self._transformed_data['umap'], n_cluster, distance_dict['l2'])
+			mid = time.perf_counter()
 			labels_umap = km.predict(self._transformed_data['umap'], distance_dict['l2'])
+			end = time.perf_counter()
+			UMAPDatatime["train"].append(mid - start)
+			UMAPDatatime["predict"].append(end - mid)
+			UMAPDatatime["total"].append(end - start)
+
 			self._results['umap'][n_cluster] = labels_umap
+
+
 
 			sh_score_umap = silhouette_score(self._transformed_data['umap'], labels_umap)
 			calinski_harabasz_score_umap = calinski_harabasz_score(self._transformed_data['umap'], labels_umap)
@@ -147,8 +185,16 @@ class Aggregator:
 			}
 
 			# incremental pca
+
+			start = time.perf_counter()
 			_ = km.train(self._transformed_data['incremental_pca'], n_cluster, distance_dict['l2'])
+			mid = time.perf_counter()
 			labels_incremental_pca_sklearn = km.predict(self._transformed_data['incremental_pca'], distance_dict['l2'])
+			end = time.perf_counter()
+			IncPCADatatime["train"].append(mid - start)
+			IncPCADatatime["predict"].append(end - mid)
+			IncPCADatatime["total"].append(end - start)
+
 			self._results['incremental_pca'][n_cluster] = labels_pca_sklearn
 
 			sh_score_incremental_pca_sklearn = silhouette_score(self._transformed_data['incremental_pca'], labels_incremental_pca_sklearn)
@@ -161,6 +207,26 @@ class Aggregator:
 				'davies_bouldin_score': davies_bouldin_score_incremental_pca_sklearn
 			}
 
+
+		print("Average Complete Train Time:"+ str(sum(completeDatatime["train"])/len(completeDatatime["train"])))
+		print("Average Complete Predict Time:"+ str(sum(completeDatatime["predict"])/len(completeDatatime["predict"])))
+		print("Average Complete Total Time:"+ str(sum(completeDatatime["total"])/len(completeDatatime["total"])))
+
+		print("Average PCA developed Train Time:"+ str(sum(PCADatatime["train"])/len(PCADatatime["train"])))
+		print("Average PCA developed Predict Time:"+ str(sum(PCADatatime["predict"])/len(PCADatatime["predict"])))
+		print("Average PCA developed Total Time:"+ str(sum(PCADatatime["total"])/len(PCADatatime["total"])))
+
+		print("Average PCA sklearn Train Time:"+ str(sum(SkPCADatatime["train"])/len(SkPCADatatime["train"])))
+		print("Average PCA sklearn Predict Time:"+ str(sum(SkPCADatatime["predict"])/len(SkPCADatatime["predict"])))
+		print("Average PCA sklearn Total Time:"+ str(sum(SkPCADatatime["total"])/len(SkPCADatatime["total"])))
+
+		print("Average UMAP Train Time:"+ str(sum(UMAPDatatime["train"])/len(UMAPDatatime["train"])))
+		print("Average UMAP Predict Time:"+ str(sum(UMAPDatatime["predict"])/len(UMAPDatatime["predict"])))
+		print("Average UMAP Total Time:"+ str(sum(UMAPDatatime["total"])/len(UMAPDatatime["total"])))
+
+		print("Average PCA increment Train Time:"+ str(sum(IncPCADatatime["train"])/len(IncPCADatatime["train"])))
+		print("Average PCA increment Predict Time:"+ str(sum(IncPCADatatime["predict"])/len(IncPCADatatime["predict"])))
+		print("Average PCA increment Total Time:"+ str(sum(IncPCADatatime["total"])/len(IncPCADatatime["total"])))
 		return 0
 
 

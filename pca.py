@@ -16,16 +16,24 @@ class PCA:
 		:param desired_components: number of desired components
 		:return: dataframe with reduce dimensionality
 		"""
+		print("\n\nOriginal:")
+		print(np.around(df, decimals=1, out=None))
 		# 1.3. 	Compute the d-dimensional mean vector (i.e., the means of every dimension of the whole data set)
 		df_mean = df - np.mean(df, axis=0)
 
 		# 1.4. 	Compute the covariance matrix of the whole data set. Show this information.
 		df_covariance_matrix = np.cov(df_mean, rowvar=False)
+		print("\n\nCovariance matrix:")
+		print(df_covariance_matrix)
+
 
 		# 1.5. 	Calculate eigenvectors (e1, e2, ..., ed) and their corresponding eigenvalues of the covariance matrix.
 		# 		Use numpy library. Write them in console.
 		eigen_values, eigen_vectors = np.linalg.eigh(df_covariance_matrix)
-
+		print("\n\nEigen Vales:")
+		print(eigen_values)
+		print("\n\nEigen Vectors:")
+		print(eigen_vectors)
 		# _print_eigen_value_and_vectors(values=eigen_values, vectors=eigen_vectors)
 
 		# 1.6. 	Sort the eigenvectors by decreasing eigenvalues and
@@ -40,9 +48,12 @@ class PCA:
 		# 1.7. 	Derive the new data set. Use this d x k eigenvector matrix to transform the samples onto the new subspace.
 		eigenvector_subspace = sorted_eigenvectors[:, 0:desired_components]
 		df_reduced = np.dot(eigenvector_subspace.transpose(), df_mean.transpose()).transpose()
+		print("\n\nChanged:")
+		print(df_reduced)
 
 		# 1.8. what we should do with reverted
 		reverted = np.dot(eigenvector_subspace, df_reduced.transpose()).transpose() + df_mean
+
 
 		return {
 			'reduced': df_reduced,

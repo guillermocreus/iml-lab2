@@ -12,7 +12,7 @@ dataset_filename = 'wine.arff'
 
 umap_parameters = {
 	'n_neighbors': 20,  # def = 15, higher --> global
-	'min_dist': 0.25,  # def = 0.1, higher --> global
+	'min_dist': 0.05,  # def = 0.1, higher --> global
 	'metric': 'euclidean'
 }
 
