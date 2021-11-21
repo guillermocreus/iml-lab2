@@ -12,7 +12,7 @@ dataset_filename = 'wine.arff'
 
 umap_parameters = {
 	'n_neighbors': 20,  # def = 15, higher --> global
-	'min_dist': 0.25,  # def = 0.1, higher --> global
+	'min_dist': 0.05,  # def = 0.1, higher --> global
 	'metric': 'euclidean'
 }
 
@@ -38,3 +38,15 @@ agg.evaluate(clean_data, 2, data_y[class_column_name], umap_parameters, dataset_
 
 # 5. plot metrics
 agg.plot_metrics_with_error()
+
+# 6. external metrics
+n_cluster_dict = {
+	'complete': 3,
+	'pca': 3,
+	'umap': 3,
+	'pca_sklearn': 3,
+	'incremental_pca': 3
+}
+
+agg.compute_confusion_matrix(n_cluster_dict, data_y[class_column_name])
+agg.plot_metrics_matching_sets()

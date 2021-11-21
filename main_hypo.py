@@ -20,7 +20,7 @@ columns_one_hot = ['referral_source']
 
 umap_parameters = {
 	'n_neighbors': 50,  # def = 15, higher --> global
-	'min_dist': 0.2,  # def = 0.1, higher --> global
+	'min_dist': 0.05,  # def = 0.1, higher --> global
 	'metric': 'euclidean'
 }
 
@@ -40,14 +40,25 @@ data_y = pd.DataFrame({class_column_name: tmp_data_y})
 
 # 2.1 information of the dataset
 dataset_info(clean_data, data_y[class_column_name], dataset_name=dataset_name)
-#
-# # 3. scatter clean data
-# features_to_plot = ['age', 'T3']
-# plot_scatter(clean_data_[features_to_plot].to_numpy(), data_y[class_column_name],
-#              f'Scatter plot of dataset {dataset_name} based on {features_to_plot}')
-#
-# # 4. evaluate methods
-# agg.evaluate(clean_data, 2, data_y[class_column_name], umap_parameters, dataset_name=dataset_name)
-#
-# # 5. plot metrics
-# agg.plot_metrics_with_error()
+
+# 3. scatter clean data
+features_to_plot = ['age', 'T3']
+plot_scatter(clean_data_[features_to_plot].to_numpy(), data_y[class_column_name],
+             f'Scatter plot of dataset {dataset_name} based on {features_to_plot}')
+
+# 4. evaluate methods
+agg.evaluate(clean_data, 2, data_y[class_column_name], umap_parameters, dataset_name=dataset_name)
+
+# 5. plot metrics
+agg.plot_metrics_with_error()
+
+n_cluster_dict = {
+	'complete': 3,
+	'pca': 3,
+	'umap': 3,
+	'pca_sklearn': 3,
+	'incremental_pca': 2
+}
+
+agg.compute_confusion_matrix(n_cluster_dict, data_y[class_column_name])
+agg.plot_metrics_matching_sets()

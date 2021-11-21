@@ -18,7 +18,7 @@ columns_one_hot = ['hoccupation']
 # umap parameters
 umap_parameters = {
 	'n_neighbors': 50,  # def = 15, higher --> global
-	'min_dist': 0.9,  # def = 0.1, higher --> global
+	'min_dist': 0.01,  # def = 0.1, higher --> global
 	'metric': 'euclidean'
 }
 
@@ -35,13 +35,25 @@ clean_data_.columns = numeric_columns + ['c' + str(num) for num in range(len(num
 # 2.1 information of the dataset
 dataset_info(clean_data, data_y[class_column_name], dataset_name=dataset_name)
 
-# # 3. plot complete dataset
-# features_to_plot = ['wage', 'children']
-# plot_scatter(clean_data_[features_to_plot].to_numpy(), data_y[class_column_name],
-#              f'Scatter plot of dataset {dataset_name} based on {features_to_plot}')
-#
-# # 4. evaluate methods
-# agg.evaluate(clean_data, 2, data_y[class_column_name], umap_parameters, dataset_name=dataset_name)
-#
-# # 5. plot metrics
-# agg.plot_metrics_with_error()
+# 3. plot complete dataset
+features_to_plot = ['wage', 'children']
+plot_scatter(clean_data_[features_to_plot].to_numpy(), data_y[class_column_name],
+             f'Scatter plot of dataset {dataset_name} based on {features_to_plot}')
+
+# 4. evaluate methods
+agg.evaluate(clean_data, 2, data_y[class_column_name], umap_parameters, dataset_name=dataset_name)
+
+# 5. plot metrics
+agg.plot_metrics_with_error()
+
+# 6. external metrics
+n_cluster_dict = {
+	'complete': 3,
+	'pca': 4,
+	'umap': 3,
+	'pca_sklearn': 4,
+	'incremental_pca': 4
+}
+
+agg.compute_confusion_matrix(n_cluster_dict, data_y[class_column_name])
+agg.plot_metrics_matching_sets()
