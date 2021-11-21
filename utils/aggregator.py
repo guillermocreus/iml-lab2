@@ -1,3 +1,4 @@
+import numpy
 import numpy as np
 import umap
 import matplotlib.pyplot as plt
@@ -71,36 +72,56 @@ class Aggregator:
 
 	def evaluate(self, data, desired_components, y, umap_parameters, dataset_name=''):
 
+		completeDatatime={"total":[],"cluster":np.array([]),"alg":np.zeros(len(range(2, 10)))}
+		PCADatatime={"total": [],"cluster":np.array([]),"alg":[]}
+		SkPCADatatime = {"total": [], "cluster": np.array([]), "alg": []}
+		UMAPDatatime={"total": [],"cluster":np.array([]),"alg": []}
+		IncPCADatatime={"total": [],"cluster":np.array([]),"alg": []}
+
+		start = time.perf_counter()
 		results_umap = self.fit_UMAP(data, y, umap_parameters, dataset_name=dataset_name)
+		total=time.perf_counter()-start
+		UMAPDatatime["alg"]=np.ones(len(range(2,10)))*total
 		self._transformed_data['umap'] = results_umap
 
+		start = time.perf_counter()
 		results_pca = self.fit_PCA(data, desired_components, y, dataset_name=dataset_name)
+		total = time.perf_counter() - start
+		PCADatatime["alg"] = np.ones(len(range(2, 10))) * total
+		print("\nPCA data:")
+		print(results_pca['reduced'])
+
 		self._transformed_data['pca'] = results_pca['reduced']
 
+		start = time.perf_counter()
 		results_pca_sklearn = self.fit_PCA_sklearn(data, desired_components,
 												   y, dataset_name=dataset_name)
+		total = time.perf_counter() - start
+		SkPCADatatime["alg"] = np.ones(len(range(2, 10))) * total
 		self._transformed_data['pca_sklearn'] = results_pca_sklearn
+		print("\nSklearn PCA data:")
+		print(results_pca_sklearn)
 
+		start = time.perf_counter()
 		results_incremental_pca_sklearn = self.fit_incremental_PCA(data, desired_components,
 																   y, dataset_name=dataset_name)
+		total = time.perf_counter() - start
+		IncPCADatatime["alg"] = np.ones(len(range(2, 10))) * total
+
+		print("\nIncremental PCA data:")
+		print(results_incremental_pca_sklearn)
+
 		self._transformed_data['incremental_pca'] = results_incremental_pca_sklearn
 
 		km = KMeans()
-		completeDatatime={"total":[],"predict":[],"train":[]}
-		PCADatatime={"total":[],"predict":[],"train":[]}
-		SkPCADatatime = {"total": [], "predict": [], "train": []}
-		UMAPDatatime={"total":[],"predict":[],"train":[]}
-		IncPCADatatime={"total":[],"predict":[],"train":[]}
+
 		for n_cluster in range(2, 10):
 			# complete data
 			start = time.perf_counter()
 			_ = km.train(data, n_cluster, distance_dict['l2'])
-			mid = time.perf_counter()
 			labels_complete = km.predict(data, distance_dict['l2'])
 			end = time.perf_counter()
-			completeDatatime["train"].append(mid - start)
-			completeDatatime["predict"].append(end - mid)
-			completeDatatime["total"].append(end - start)
+			completeDatatime["cluster"]=np.append(completeDatatime["cluster"],(end - start))
 
 			self._results['complete'][n_cluster] = labels_complete
 
@@ -117,12 +138,9 @@ class Aggregator:
 			# homemade PCA reduced data
 			start = time.perf_counter()
 			_ = km.train(self._transformed_data['pca'], n_cluster, distance_dict['l2'])
-			mid = time.perf_counter()
 			labels_pca = km.predict(self._transformed_data['pca'], distance_dict['l2'])
 			end = time.perf_counter()
-			PCADatatime["train"].append(mid - start)
-			PCADatatime["predict"].append(end - mid)
-			PCADatatime["total"].append(end - start)
+			PCADatatime["cluster"]=np.append(PCADatatime["cluster"],(end - start))
 
 			self._results['pca'][n_cluster] = labels_pca
 
@@ -139,12 +157,9 @@ class Aggregator:
 			# sklearn PCA reduced data
 			start = time.perf_counter()
 			_ = km.train(self._transformed_data['pca_sklearn'], n_cluster, distance_dict['l2'])
-			mid = time.perf_counter()
 			labels_pca_sklearn = km.predict(self._transformed_data['pca_sklearn'], distance_dict['l2'])
 			end = time.perf_counter()
-			SkPCADatatime["train"].append(mid - start)
-			SkPCADatatime["predict"].append(end - mid)
-			SkPCADatatime["total"].append(end - start)
+			SkPCADatatime["cluster"]=np.append(SkPCADatatime["cluster"],(end - start))
 
 			self._results['pca_sklearn'][n_cluster] = labels_pca_sklearn
 
@@ -163,12 +178,9 @@ class Aggregator:
 			# umap reduced data
 			start = time.perf_counter()
 			_ = km.train(self._transformed_data['umap'], n_cluster, distance_dict['l2'])
-			mid = time.perf_counter()
 			labels_umap = km.predict(self._transformed_data['umap'], distance_dict['l2'])
 			end = time.perf_counter()
-			UMAPDatatime["train"].append(mid - start)
-			UMAPDatatime["predict"].append(end - mid)
-			UMAPDatatime["total"].append(end - start)
+			UMAPDatatime["cluster"]=np.append(UMAPDatatime["cluster"],(end - start))
 
 			self._results['umap'][n_cluster] = labels_umap
 
@@ -188,12 +200,9 @@ class Aggregator:
 
 			start = time.perf_counter()
 			_ = km.train(self._transformed_data['incremental_pca'], n_cluster, distance_dict['l2'])
-			mid = time.perf_counter()
 			labels_incremental_pca_sklearn = km.predict(self._transformed_data['incremental_pca'], distance_dict['l2'])
 			end = time.perf_counter()
-			IncPCADatatime["train"].append(mid - start)
-			IncPCADatatime["predict"].append(end - mid)
-			IncPCADatatime["total"].append(end - start)
+			IncPCADatatime["cluster"]=np.append(IncPCADatatime["cluster"],(end - start))
 
 			self._results['incremental_pca'][n_cluster] = labels_pca_sklearn
 
@@ -208,25 +217,25 @@ class Aggregator:
 			}
 
 
-		print("Average Complete Train Time:"+ str(sum(completeDatatime["train"])/len(completeDatatime["train"])))
-		print("Average Complete Predict Time:"+ str(sum(completeDatatime["predict"])/len(completeDatatime["predict"])))
-		print("Average Complete Total Time:"+ str(sum(completeDatatime["total"])/len(completeDatatime["total"])))
+		print("Average Complete Algorithim Time:"+ str(sum(completeDatatime["alg"])/len(completeDatatime["alg"])))
+		print("Average Complete Cluster Time:"+ str(sum(completeDatatime["cluster"])/len(completeDatatime["cluster"])))
+		print("Average Complete Total Time:"+ str(sum(completeDatatime["alg"]+completeDatatime["cluster"])/len(completeDatatime["cluster"])))
 
-		print("Average PCA developed Train Time:"+ str(sum(PCADatatime["train"])/len(PCADatatime["train"])))
-		print("Average PCA developed Predict Time:"+ str(sum(PCADatatime["predict"])/len(PCADatatime["predict"])))
-		print("Average PCA developed Total Time:"+ str(sum(PCADatatime["total"])/len(PCADatatime["total"])))
+		print("Average PCA developed Algorithim Time:"+ str(sum(PCADatatime["alg"])/len(PCADatatime["alg"])))
+		print("Average PCA developed Cluster Time:"+ str(sum(PCADatatime["cluster"])/len(PCADatatime["cluster"])))
+		print("Average PCA developed Total Time:"+ str(sum(PCADatatime["alg"]+PCADatatime["cluster"])/len(PCADatatime["cluster"])))
 
-		print("Average PCA sklearn Train Time:"+ str(sum(SkPCADatatime["train"])/len(SkPCADatatime["train"])))
-		print("Average PCA sklearn Predict Time:"+ str(sum(SkPCADatatime["predict"])/len(SkPCADatatime["predict"])))
-		print("Average PCA sklearn Total Time:"+ str(sum(SkPCADatatime["total"])/len(SkPCADatatime["total"])))
+		print("Average PCA sklearn Algorithim Time:"+ str(sum(SkPCADatatime["alg"])/len(SkPCADatatime["alg"])))
+		print("Average PCA sklearn Cluster Time:"+ str(sum(SkPCADatatime["cluster"])/len(SkPCADatatime["cluster"])))
+		print("Average PCA sklearn Total Time:"+ str(sum(SkPCADatatime["alg"]+SkPCADatatime["cluster"])/len(SkPCADatatime["cluster"])))
 
-		print("Average UMAP Train Time:"+ str(sum(UMAPDatatime["train"])/len(UMAPDatatime["train"])))
-		print("Average UMAP Predict Time:"+ str(sum(UMAPDatatime["predict"])/len(UMAPDatatime["predict"])))
-		print("Average UMAP Total Time:"+ str(sum(UMAPDatatime["total"])/len(UMAPDatatime["total"])))
+		print("Average PCA increment Algorithim Time:"+ str(sum(IncPCADatatime["alg"])/len(IncPCADatatime["alg"])))
+		print("Average PCA increment Cluster Time:"+ str(sum(IncPCADatatime["cluster"])/len(IncPCADatatime["cluster"])))
+		print("Average PCA increment Total Time:"+ str(sum(IncPCADatatime["alg"]+IncPCADatatime["cluster"])/len(IncPCADatatime["cluster"])))
 
-		print("Average PCA increment Train Time:"+ str(sum(IncPCADatatime["train"])/len(IncPCADatatime["train"])))
-		print("Average PCA increment Predict Time:"+ str(sum(IncPCADatatime["predict"])/len(IncPCADatatime["predict"])))
-		print("Average PCA increment Total Time:"+ str(sum(IncPCADatatime["total"])/len(IncPCADatatime["total"])))
+		print("Average UMAP Algorithim Time:"+ str(sum(UMAPDatatime["alg"])/len(UMAPDatatime["alg"])))
+		print("Average UMAP Cluster Time:"+ str(sum(UMAPDatatime["cluster"])/len(UMAPDatatime["cluster"])))
+		print("Average UMAP Total Time:"+ str(sum(UMAPDatatime["alg"]+UMAPDatatime["cluster"])/len(UMAPDatatime["cluster"])))
 		return 0
 
 
