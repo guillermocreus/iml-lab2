@@ -1,3 +1,4 @@
+import numpy
 import numpy as np
 from pandas import Series, DataFrame
 import umap
@@ -9,6 +10,7 @@ from sklearn.decomposition import PCA as PCA_sklearn
 from sklearn.decomposition import IncrementalPCA
 from classifiers.k_means import KMeans
 from utils.distance_utils import distance_dict
+import time
 # import matplotlib.colors as colors
 # from datetime import datetime
 #
@@ -77,25 +79,57 @@ class Aggregator:
 
 	def evaluate(self, data, desired_components, y, umap_parameters, dataset_name=''):
 
+		completeDatatime={"total":[],"cluster":np.array([]),"alg":np.zeros(len(range(2, 10)))}
+		PCADatatime={"total": [],"cluster":np.array([]),"alg":[]}
+		SkPCADatatime = {"total": [], "cluster": np.array([]), "alg": []}
+		UMAPDatatime={"total": [],"cluster":np.array([]),"alg": []}
+		IncPCADatatime={"total": [],"cluster":np.array([]),"alg": []}
+
+		start = time.perf_counter()
 		results_umap = self.fit_UMAP(data, y, umap_parameters, dataset_name=dataset_name)
+		total=time.perf_counter()-start
+		UMAPDatatime["alg"]=np.ones(len(range(2,10)))*total
 		self._transformed_data['umap'] = results_umap
 
+		start = time.perf_counter()
 		results_pca = self.fit_PCA(data, desired_components, y, dataset_name=dataset_name)
+		total = time.perf_counter() - start
+		PCADatatime["alg"] = np.ones(len(range(2, 10))) * total
+		print("\nPCA data:")
+		print(results_pca['reduced'])
+
 		self._transformed_data['pca'] = results_pca['reduced']
 
+		start = time.perf_counter()
 		results_pca_sklearn = self.fit_PCA_sklearn(data, desired_components,
 												   y, dataset_name=dataset_name)
+		total = time.perf_counter() - start
+		SkPCADatatime["alg"] = np.ones(len(range(2, 10))) * total
 		self._transformed_data['pca_sklearn'] = results_pca_sklearn
+		print("\nSklearn PCA data:")
+		print(results_pca_sklearn)
 
+		start = time.perf_counter()
 		results_incremental_pca_sklearn = self.fit_incremental_PCA(data, desired_components,
 																   y, dataset_name=dataset_name)
+		total = time.perf_counter() - start
+		IncPCADatatime["alg"] = np.ones(len(range(2, 10))) * total
+
+		print("\nIncremental PCA data:")
+		print(results_incremental_pca_sklearn)
+
 		self._transformed_data['incremental_pca'] = results_incremental_pca_sklearn
 
 		km = KMeans()
+
 		for n_cluster in range(2, 10):
 			# complete data
+			start = time.perf_counter()
 			_ = km.train(data, n_cluster, distance_dict['l2'])
 			labels_complete = km.predict(data, distance_dict['l2'])
+			end = time.perf_counter()
+			completeDatatime["cluster"]=np.append(completeDatatime["cluster"],(end - start))
+
 			self._results['complete'][n_cluster] = labels_complete
 
 			sh_score_complete = silhouette_score(data, labels_complete)
@@ -109,8 +143,12 @@ class Aggregator:
 			}
 
 			# homemade PCA reduced data
+			start = time.perf_counter()
 			_ = km.train(self._transformed_data['pca'], n_cluster, distance_dict['l2'])
 			labels_pca = km.predict(self._transformed_data['pca'], distance_dict['l2'])
+			end = time.perf_counter()
+			PCADatatime["cluster"]=np.append(PCADatatime["cluster"],(end - start))
+
 			self._results['pca'][n_cluster] = labels_pca
 
 			sh_score_pca = silhouette_score(self._transformed_data['pca'], labels_pca)
@@ -124,9 +162,15 @@ class Aggregator:
 			}
 
 			# sklearn PCA reduced data
+			start = time.perf_counter()
 			_ = km.train(self._transformed_data['pca_sklearn'], n_cluster, distance_dict['l2'])
 			labels_pca_sklearn = km.predict(self._transformed_data['pca_sklearn'], distance_dict['l2'])
+			end = time.perf_counter()
+			SkPCADatatime["cluster"]=np.append(SkPCADatatime["cluster"],(end - start))
+
 			self._results['pca_sklearn'][n_cluster] = labels_pca_sklearn
+
+
 
 			sh_score_pca_sklearn = silhouette_score(self._transformed_data['pca_sklearn'], labels_pca_sklearn)
 			calinski_harabasz_score_pca_sklearn = calinski_harabasz_score(self._transformed_data['pca_sklearn'], labels_pca_sklearn)
@@ -139,9 +183,15 @@ class Aggregator:
 			}
 
 			# umap reduced data
+			start = time.perf_counter()
 			_ = km.train(self._transformed_data['umap'], n_cluster, distance_dict['l2'])
 			labels_umap = km.predict(self._transformed_data['umap'], distance_dict['l2'])
+			end = time.perf_counter()
+			UMAPDatatime["cluster"]=np.append(UMAPDatatime["cluster"],(end - start))
+
 			self._results['umap'][n_cluster] = labels_umap
+
+
 
 			sh_score_umap = silhouette_score(self._transformed_data['umap'], labels_umap)
 			calinski_harabasz_score_umap = calinski_harabasz_score(self._transformed_data['umap'], labels_umap)
@@ -154,8 +204,13 @@ class Aggregator:
 			}
 
 			# incremental pca
+
+			start = time.perf_counter()
 			_ = km.train(self._transformed_data['incremental_pca'], n_cluster, distance_dict['l2'])
 			labels_incremental_pca_sklearn = km.predict(self._transformed_data['incremental_pca'], distance_dict['l2'])
+			end = time.perf_counter()
+			IncPCADatatime["cluster"]=np.append(IncPCADatatime["cluster"],(end - start))
+
 			self._results['incremental_pca'][n_cluster] = labels_pca_sklearn
 
 			sh_score_incremental_pca_sklearn = silhouette_score(self._transformed_data['incremental_pca'], labels_incremental_pca_sklearn)
