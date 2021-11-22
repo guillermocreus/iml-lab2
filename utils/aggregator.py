@@ -1,5 +1,6 @@
 import numpy
 import numpy as np
+from pandas import Series, DataFrame
 import umap
 import matplotlib.pyplot as plt
 from sklearn.metrics import silhouette_score
@@ -14,7 +15,7 @@ import time
 # from datetime import datetime
 #
 # colors = list(colors._colors_full_map.values())
-from pandas import Series, DataFrame
+
 
 from pca import PCA
 from utils.ploting_utils import plot_scatter
@@ -29,6 +30,12 @@ class Aggregator:
 		self._transformed_data = {'pca': {}, 'umap': {}, 'pca_sklearn': {}, 'incremental_pca': {}}
 		self._results = {'complete': {}, 'pca': {}, 'umap': {}, 'pca_sklearn': {}, 'incremental_pca': {}}
 		self._metrics = {'complete': {}, 'pca': {}, 'umap': {}, 'pca_sklearn': {}, 'incremental_pca': {}}
+
+		# External metrics
+		self._precision = {'complete': {}, 'pca': {}, 'umap': {}, 'pca_sklearn': {}, 'incremental_pca': {}}
+		self._recall = {'complete': {}, 'pca': {}, 'umap': {}, 'pca_sklearn': {}, 'incremental_pca': {}}
+		self._f1_score = {'complete': {}, 'pca': {}, 'umap': {}, 'pca_sklearn': {}, 'incremental_pca': {}}
+
 		self._confusion_matrix = dict()
 
 	def fit_UMAP(self, data, y: Series, umap_parameters, dataset_name='', plot=True):
@@ -216,27 +223,68 @@ class Aggregator:
 				'davies_bouldin_score': davies_bouldin_score_incremental_pca_sklearn
 			}
 
+	def compute_confusion_matrix(self, n_cluster_dict, true_labels):
+		"""
+		"""
+		for algo in list(self._results):
+			pred_labels = self._results[algo][n_cluster_dict[algo]]
+			TP, FP, TN, FN = 0, 0, 0, 0
+			for i in range(len(pred_labels)):
+				for j in range(i + 1, len(pred_labels)):
+					y_p_i, y_p_j = pred_labels[i], pred_labels[j]
+					y_t_i, y_t_j = true_labels[i], true_labels[j]
+					if y_p_i == y_p_j and y_t_i == y_t_j:
+						TP += 1
+					elif y_p_i == y_p_j and y_t_i != y_t_j:
+						FP += 1
+					elif y_p_i != y_p_j and y_t_i != y_t_j:
+						TN += 1
+					elif y_p_i != y_p_j and y_t_i == y_t_j:
+						FN += 1
 
-		print("Average Complete Algorithim Time:"+ str(sum(completeDatatime["alg"])/len(completeDatatime["alg"])))
-		print("Average Complete Cluster Time:"+ str(sum(completeDatatime["cluster"])/len(completeDatatime["cluster"])))
-		print("Average Complete Total Time:"+ str(sum(completeDatatime["alg"]+completeDatatime["cluster"])/len(completeDatatime["cluster"])))
+			# TP / (TP + FP + FN)
 
-		print("Average PCA developed Algorithim Time:"+ str(sum(PCADatatime["alg"])/len(PCADatatime["alg"])))
-		print("Average PCA developed Cluster Time:"+ str(sum(PCADatatime["cluster"])/len(PCADatatime["cluster"])))
-		print("Average PCA developed Total Time:"+ str(sum(PCADatatime["alg"]+PCADatatime["cluster"])/len(PCADatatime["cluster"])))
+			self._confusion_matrix[algo] = {
+				'TP': TP,
+				'FP': FP,
+				'TN': TN,
+				'FN': FN
+			}
+			print(f'Confusion matrix of algorithm: {algo}')
+			print(self._confusion_matrix[algo])
 
-		print("Average PCA sklearn Algorithim Time:"+ str(sum(SkPCADatatime["alg"])/len(SkPCADatatime["alg"])))
-		print("Average PCA sklearn Cluster Time:"+ str(sum(SkPCADatatime["cluster"])/len(SkPCADatatime["cluster"])))
-		print("Average PCA sklearn Total Time:"+ str(sum(SkPCADatatime["alg"]+SkPCADatatime["cluster"])/len(SkPCADatatime["cluster"])))
+	def plot_metrics_matching_sets(self, include_f1_score=True, include_precision=True, include_recall=True):
 
-		print("Average PCA increment Algorithim Time:"+ str(sum(IncPCADatatime["alg"])/len(IncPCADatatime["alg"])))
-		print("Average PCA increment Cluster Time:"+ str(sum(IncPCADatatime["cluster"])/len(IncPCADatatime["cluster"])))
-		print("Average PCA increment Total Time:"+ str(sum(IncPCADatatime["alg"]+IncPCADatatime["cluster"])/len(IncPCADatatime["cluster"])))
+		if not include_f1_score and not include_precision and not include_recall:
+			return
 
-		print("Average UMAP Algorithim Time:"+ str(sum(UMAPDatatime["alg"])/len(UMAPDatatime["alg"])))
-		print("Average UMAP Cluster Time:"+ str(sum(UMAPDatatime["cluster"])/len(UMAPDatatime["cluster"])))
-		print("Average UMAP Total Time:"+ str(sum(UMAPDatatime["alg"]+UMAPDatatime["cluster"])/len(UMAPDatatime["cluster"])))
-		return 0
+		df = []
+		for algo in list(self._results):
+
+			TP = self._confusion_matrix[algo]['TP']
+			FP = self._confusion_matrix[algo]['FP']
+			FN = self._confusion_matrix[algo]['FN']
+
+			precision = TP / (TP + FP)
+			recall = TP / (TP + FN)
+			f1_score = 2 / (1 / precision + 1 / recall)
+
+			if include_f1_score:
+				df.append([algo, 'f1_score', f1_score])
+			if include_precision:
+				df.append([algo, 'precision', precision])
+			if include_recall:
+				df.append([algo, 'recall', recall])
+
+		df = DataFrame(df, columns=['Algorithms', 'metrics', 'val'])
+		df = df.pivot(index='metrics', columns='Algorithms', values='val')
+		df.plot(kind='bar')
+		plt.title('Metrics matching sets')
+		plt.xticks(rotation=0)
+		plt.legend(loc=(0.97, 0))
+		plt.show()
+		print(df)
+
 
 
 	def plot_metrics_with_error(self):
