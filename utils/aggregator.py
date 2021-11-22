@@ -222,6 +222,27 @@ class Aggregator:
 				'calinski_harabasz_score': calinski_harabasz_score_incremental_pca_sklearn,
 				'davies_bouldin_score': davies_bouldin_score_incremental_pca_sklearn
 			}
+			
+		print("Average Complete Algorithim Time:"+ str(sum(completeDatatime["alg"])/len(completeDatatime["alg"])))
+		print("Average Complete Cluster Time:"+ str(sum(completeDatatime["cluster"])/len(completeDatatime["cluster"])))
+		print("Average Complete Total Time:"+ str(sum(completeDatatime["alg"]+completeDatatime["cluster"])/len(completeDatatime["cluster"])))
+
+		print("Average PCA developed Algorithim Time:"+ str(sum(PCADatatime["alg"])/len(PCADatatime["alg"])))
+		print("Average PCA developed Cluster Time:"+ str(sum(PCADatatime["cluster"])/len(PCADatatime["cluster"])))
+		print("Average PCA developed Total Time:"+ str(sum(PCADatatime["alg"]+PCADatatime["cluster"])/len(PCADatatime["cluster"])))
+
+		print("Average PCA sklearn Algorithim Time:"+ str(sum(SkPCADatatime["alg"])/len(SkPCADatatime["alg"])))
+		print("Average PCA sklearn Cluster Time:"+ str(sum(SkPCADatatime["cluster"])/len(SkPCADatatime["cluster"])))
+		print("Average PCA sklearn Total Time:"+ str(sum(SkPCADatatime["alg"]+SkPCADatatime["cluster"])/len(SkPCADatatime["cluster"])))
+
+		print("Average PCA increment Algorithim Time:"+ str(sum(IncPCADatatime["alg"])/len(IncPCADatatime["alg"])))
+		print("Average PCA increment Cluster Time:"+ str(sum(IncPCADatatime["cluster"])/len(IncPCADatatime["cluster"])))
+		print("Average PCA increment Total Time:"+ str(sum(IncPCADatatime["alg"]+IncPCADatatime["cluster"])/len(IncPCADatatime["cluster"])))
+
+		print("Average UMAP Algorithim Time:"+ str(sum(UMAPDatatime["alg"])/len(UMAPDatatime["alg"])))
+		print("Average UMAP Cluster Time:"+ str(sum(UMAPDatatime["cluster"])/len(UMAPDatatime["cluster"])))
+		print("Average UMAP Total Time:"+ str(sum(UMAPDatatime["alg"]+UMAPDatatime["cluster"])/len(UMAPDatatime["cluster"])))
+		return 0
 
 	def compute_confusion_matrix(self, n_cluster_dict, true_labels):
 		"""
