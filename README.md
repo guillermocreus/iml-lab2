@@ -20,7 +20,7 @@ to each other
 
 ## Report
 
-A more detailed analysis of this task is shown in the this [document](./report.pdf).
+A more detailed analysis of this task is shown in this [document](./report.pdf).
 
 ## Instructions
 
