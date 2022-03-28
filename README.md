@@ -18,6 +18,9 @@ of the PCA and UMAP algorithms is achieved. This includes a better understanding
 the expected outcomes from them, how they relate to previous reports that were written, and how they compare
 to each other
 
+## Report
+
+A more detailed analysis of this task is shown in the this [document](./report.pdf).
 
 ## Instructions
 
